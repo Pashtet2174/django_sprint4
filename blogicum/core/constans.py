@@ -1,0 +1,3 @@
+NUMBER_OF_POSTS: int = 10
+MAX_LENGTH: int = 256
+LENGTH_STRING: int = 20
