@@ -12,8 +12,7 @@
           <div class="card mb-3">
             <div class="card-body">
               <h6 class="card-subtitle mb-2 text-muted">
-                {{ comment.author.username }} • {{ comment.created_at|date:"d E
-                Y, H:i" }}
+                {{ comment.author.username }} • {{ comment.created_at|date:"d EY, H:i" }}
               </h6>
               <p class="card-text">{{ comment.text|linebreaksbr }}</p>
             </div>

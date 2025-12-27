@@ -1,7 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import DetailView, TemplateView, CreateView
 
 from .models import StaticPage
 
@@ -48,3 +48,14 @@ def registration(request):
         form = UserCreationForm()
 
     return render(request, "registration/registration_form.html", {"form": form})
+
+
+class RegistrationView(CreateView):
+    form_class = UserCreationForm
+    template_name = "registration/registration_form.html"
+    success_url = "/"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)
+        return response

@@ -23,9 +23,11 @@ from pages import views as pages_views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include("django.contrib.auth.urls")),
-    path("", include("blog.urls", namespace="blog")),
+    path("", include("blog.urls")),
     path("pages/", include("pages.urls", namespace="pages")),
-    path("registration/", pages_views.registration, name="registration"),
+    path("test/403/", pages_views.csrf_failure, name="test_403"),
+    path("test/404/", pages_views.page_not_found, name="test_404"),
+    path("test/500/", pages_views.server_error, name="test_500"),
 ]
 
 

@@ -14,6 +14,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+TEMPLATES_DIR = BASE_DIR / 'templates'
+
 SECRET_KEY = "django-insecure-y7z&ctzvdxey8uun)t%lubx3lu)e0*!_6*2%v!3!qqtp3vbdm@"
 
 DEBUG = True

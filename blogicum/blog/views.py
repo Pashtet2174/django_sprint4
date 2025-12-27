@@ -32,11 +32,24 @@ def post_detail(request, pk):
         Post.objects.select_related("author", "category", "location"), pk=pk
     )
 
-    if not post.is_published or post.pub_date > timezone.now():
-        if request.user != post.author:
-            from django.http import Http404
+    # Проверка доступа к посту
+    can_view = True
 
-            raise Http404("Пост не найден")
+    # Пост не опубликован
+    if not post.is_published:
+        can_view = (request.user == post.author)
+
+    # Пост с будущей датой публикации
+    elif post.pub_date > timezone.now():
+        can_view = (request.user == post.author)
+
+    # Категория не опубликована (ВАЖНО: добавить эту проверку)
+    elif not post.category.is_published:
+        can_view = (request.user == post.author)
+
+    if not can_view:
+        from django.http import Http404
+        raise Http404("Пост не найден")
 
     comments = post.comments.all().select_related("author")
 
@@ -142,9 +155,8 @@ def edit_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
 
     if post.author != request.user:
-        from django.http import Http404
-
-        raise Http404("Вы не можете редактировать этот пост")
+        messages.error(request, "Вы не можете редактировать этот пост")
+        return redirect("blog:post_detail", pk=post.pk)  # Перенаправление вместо 404
 
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES, instance=post)
@@ -165,9 +177,8 @@ def delete_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
 
     if post.author != request.user:
-        from django.http import Http404
-
-        raise Http404("Вы не можете удалить этот пост")
+        messages.error(request, "Вы не можете удалить этот пост")
+        return redirect("blog:post_detail", pk=post.pk)  # Перенаправление вместо 404
 
     if request.method == "POST":
         post.delete()
@@ -208,9 +219,8 @@ def edit_comment(request, post_pk, comment_pk):
     comment = get_object_or_404(Comment, pk=comment_pk)
 
     if comment.author != request.user:
-        from django.http import Http404
-
-        raise Http404("Вы не можете редактировать этот комментарий")
+        messages.error(request, "Вы не можете редактировать этот комментарий")
+        return redirect("blog:post_detail", pk=post.pk)  # Перенаправление вместо 404
 
     if request.method == "POST":
         form = CommentForm(request.POST, instance=comment)
@@ -236,22 +246,17 @@ def delete_comment(request, post_pk, comment_pk):
     comment = get_object_or_404(Comment, pk=comment_pk)
 
     if comment.author != request.user:
-        from django.http import Http404
-
-        raise Http404("Вы не можете удалить этот комментарий")
+        messages.error(request, "Вы не можете удалить этот комментарий")
+        return redirect("blog:post_detail", pk=post.pk)  # Перенаправление вместо 404
 
     if request.method == "POST":
         comment.delete()
         messages.success(request, "Комментарий успешно удален!")
         return redirect("blog:post_detail", pk=post.pk)
 
-    from .forms import CommentForm
-
-    form = CommentForm(instance=comment)
     context = {
-        "form": form,
         "post": post,
         "comment": comment,
         "deleting_comment": True,
     }
-    return render(request, "blog/create.html", context)
+    return render(request, "blog/delete_comment.html", context)
