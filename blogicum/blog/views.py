@@ -32,18 +32,14 @@ def post_detail(request, pk):
         Post.objects.select_related("author", "category", "location"), pk=pk
     )
 
-    # Проверка доступа к посту
     can_view = True
 
-    # Пост не опубликован
     if not post.is_published:
         can_view = (request.user == post.author)
 
-    # Пост с будущей датой публикации
     elif post.pub_date > timezone.now():
         can_view = (request.user == post.author)
 
-    # Категория не опубликована (ВАЖНО: добавить эту проверку)
     elif not post.category.is_published:
         can_view = (request.user == post.author)
 
@@ -195,7 +191,6 @@ def delete_post(request, pk):
 
 @login_required
 def add_comment(request, pk):
-    """Добавление комментария к посту."""
     post = get_object_or_404(Post, pk=pk)
 
     if request.method == "POST":
@@ -214,13 +209,12 @@ def add_comment(request, pk):
 
 @login_required
 def edit_comment(request, post_pk, comment_pk):
-    """Редактирование комментария."""
     post = get_object_or_404(Post, pk=post_pk)
     comment = get_object_or_404(Comment, pk=comment_pk)
 
     if comment.author != request.user:
         messages.error(request, "Вы не можете редактировать этот комментарий")
-        return redirect("blog:post_detail", pk=post.pk)  # Перенаправление вместо 404
+        return redirect("blog:post_detail", pk=post.pk)
 
     if request.method == "POST":
         form = CommentForm(request.POST, instance=comment)
@@ -247,7 +241,7 @@ def delete_comment(request, post_pk, comment_pk):
 
     if comment.author != request.user:
         messages.error(request, "Вы не можете удалить этот комментарий")
-        return redirect("blog:post_detail", pk=post.pk)  # Перенаправление вместо 404
+        return redirect("blog:post_detail", pk=post.pk)
 
     if request.method == "POST":
         comment.delete()
